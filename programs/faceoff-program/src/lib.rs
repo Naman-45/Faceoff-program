@@ -7,7 +7,7 @@ use anchor_lang::prelude::*;
 
 use instructions::*;
 
-declare_id!("J6Wt5t41ZoM85nJFGawBaAgUGFkM3RDdnuxFwHLfw19R");
+declare_id!("J7NDrWGG2Y77xq21VphX1ue4xeEX4LViLAPheNhni8cb");
 
 #[program]
 pub mod faceoff_program {
@@ -23,7 +23,7 @@ pub mod faceoff_program {
         Ok(())
     }
 
-    pub fn settle_wager(ctx: Context<Settle>, winner: Option<Pubkey>, challenge_id: String) -> Result<()> {
+    pub fn settle_wager<'a, 'b, 'c, 'info>(ctx: Context<'a, 'b, 'c, 'info, Settle<'info>>, winner: Option<Pubkey>, challenge_id: String) -> Result<()> {
         settle::settle_challenge(ctx, winner, challenge_id)?;
         Ok(())
     }

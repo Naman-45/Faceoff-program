@@ -10,4 +10,8 @@ pub enum CustomError {
     WagerAlreadySettled,
     #[msg("The wager amount is incorrect.")]
     IncorrectWagerAmount,
+    #[msg("Winner is neither creator nor opponent.")]
+    ThirdPersonWinner,
+    #[msg("Missing accounts in remaining_accounts")]
+    MissingAccounts
 }
