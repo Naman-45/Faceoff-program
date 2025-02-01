@@ -23,7 +23,7 @@ pub mod faceoff_program {
         Ok(())
     }
 
-    pub fn settle_wager<'a, 'b, 'c, 'info>(ctx: Context<'a, 'b, 'c, 'info, Settle<'info>>, winner: Option<Pubkey>, challenge_id: String) -> Result<()> {
+    pub fn settle_wager(ctx: Context<Settle>, winner: Option<Pubkey>, challenge_id: String) -> Result<()> {
         settle::settle_challenge(ctx, winner, challenge_id)?;
         Ok(())
     }

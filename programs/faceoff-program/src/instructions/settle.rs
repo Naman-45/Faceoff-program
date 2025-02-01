@@ -15,6 +15,20 @@ pub struct Settle<'info> {
     )]
     pub challenge: Account<'info, Challenge>,
 
+    /// CHECK: opponent token account
+    #[account(
+        mut,
+        constraint = opponent.key() == challenge.opponent.unwrap() @CustomError::WrongOpponent
+    )]
+    pub opponent: UncheckedAccount<'info>,
+
+    /// CHECK: creator token account
+    #[account(
+        mut,
+        constraint = creator.key() == challenge.creator @CustomError::WrongCreator
+    )]
+    pub creator: UncheckedAccount<'info>,
+
     #[account(
         mut,
         seeds = [b"wager_account", challenge_id.as_bytes()],
@@ -24,17 +38,10 @@ pub struct Settle<'info> {
     pub system_program: Program<'info, System>
 }
 
-pub fn settle_challenge<'a, 'b, 'c, 'info>(ctx: Context<'a, 'b, 'c, 'info, Settle<'info>>, winner: Option<Pubkey>, challenge_id: String) -> Result<()> {
+pub fn settle_challenge(ctx: Context<Settle>, winner: Option<Pubkey>, challenge_id: String) -> Result<()> {
+
     let challenge = &mut ctx.accounts.challenge;
-    let remaining_accounts = &ctx.remaining_accounts;
-
-    require!(remaining_accounts.len() >= 2, CustomError::MissingAccounts);
-    
-    let creator_account = &remaining_accounts[0];
-    let opponent_account = &remaining_accounts[1];
-
     require!(!challenge.result_settled, CustomError::WagerAlreadySettled);
-    require!(remaining_accounts.len() >= 2, CustomError::MissingAccounts);
 
     if let Some(winner_pubkey) = winner {
         require!(
@@ -53,9 +60,9 @@ pub fn settle_challenge<'a, 'b, 'c, 'info>(ctx: Context<'a, 'b, 'c, 'info, Settl
         Some(winner_pubkey) => {
             let payout = challenge.wager_amount * 2;
             let winner_account = if winner_pubkey == challenge.creator {
-                creator_account.to_account_info()
+                ctx.accounts.creator.to_account_info()
             } else {
-                opponent_account.to_account_info()
+                ctx.accounts.opponent.to_account_info()
             };
     
             let program_account = ctx.accounts.program_account.to_account_info();
@@ -79,12 +86,12 @@ pub fn settle_challenge<'a, 'b, 'c, 'info>(ctx: Context<'a, 'b, 'c, 'info, Settl
     
             let transfer_to_creator = Transfer {
                 from: program_account.clone(), 
-                to: creator_account.to_account_info(),
+                to: ctx.accounts.creator.to_account_info(),
             };
     
             let transfer_to_opponent = Transfer {
                 from: program_account, 
-                to: opponent_account.to_account_info(),
+                to: ctx.accounts.opponent.to_account_info(),
             };
     
             let creator_transfer_ctx = CpiContext::new_with_signer(

@@ -13,5 +13,9 @@ pub enum CustomError {
     #[msg("Winner is neither creator nor opponent.")]
     ThirdPersonWinner,
     #[msg("Missing accounts in remaining_accounts")]
-    MissingAccounts
+    MissingAccounts,
+    #[msg("Not the same opponent being passed, while settling")]
+    WrongOpponent,
+    #[msg("Not the same creator being passed, while settling")]
+    WrongCreator
 }
